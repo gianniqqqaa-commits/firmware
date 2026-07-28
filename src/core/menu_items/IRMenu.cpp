@@ -5,6 +5,8 @@
 #include "modules/ir/TV-B-Gone.h"
 #include "modules/ir/custom_ir.h"
 #include "modules/ir/ir_jammer.h"
+#include "modules/ir/universal_ir.h"
+#include "core/sd_functions.h"
 #include "modules/ir/ir_read.h"
 
 void IRMenu::optionsMenu() {
@@ -12,14 +14,19 @@ void IRMenu::optionsMenu() {
     bool prevPower = M5.Power.getExtOutput();
     M5.Power.setExtOutput(true); // ENABLE 5V OUTPUT
 #endif
-    options = {
-        {"TV-B-Gone", StartTvBGone              },
-        {"Custom IR", otherIRcodes              },
-        {"IR Read",   [=]() { IrRead(); }       },
+  options = {
+        {"TV-B-Gone",      StartTvBGone              },
+        {"Custom IR",      otherIRcodes              },
+        {"IR Read",        [=]() { IrRead(); }       },
+        {"Universal Remote", [=]() {
+            FS* fs = nullptr;
+            if (getFsStorage(fs)) universalRemoteMenu(*fs);
+            else { displayTextLine("No storage"); delay(1000); }
+        }},
 #if !defined(LITE_VERSION)
-        {"IR Jammer", startIrJammer             }, // Simple frequency-adjustable jammer
+        {"IR Jammer",      startIrJammer             },
 #endif
-        {"Config",    [this]() { configMenu(); }},
+        {"Config",          [this]() { configMenu(); }},
     };
     addOptionToMainMenu();
 
